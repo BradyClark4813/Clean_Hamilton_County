@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clean Westfield | Our town, cared for together</title>
+    <meta
+      name="description"
+      content="A shared map for reporting litter, illegal dumping, and environmental concerns across Westfield."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .hero-photo { background-image: linear-gradient(180deg, #173f3515, #173f3548), url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=90') !important; background-position:center; background-size:cover; }
+      .hero-photo {
+        background: linear-gradient(180deg, #173f3520, #173f3566), url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1200&q=90');
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+      }
+      .report-image {
+        background-image: linear-gradient(180deg, #173f3530, #173f35d9), url('https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1200&q=90');
+        background-position: center;
+        background-size: cover;
+      }
+      .map-wrap #map {
+        background-color: #dce8d5;
+        background-image: linear-gradient(28deg, transparent 48%, #b9cbb1 49%, #b9cbb1 51%, transparent 52%), linear-gradient(112deg, transparent 48%, #c6d5bf 49%, #c6d5bf 51%, transparent 52%), linear-gradient(0deg, transparent 74%, #d0dcc9 75%, #d0dcc9 76%, transparent 77%);
+        background-size: 260px 170px, 330px 230px, 100% 100%;
+      }
+      .map-placeholder-label { position:absolute; top:16px; left:16px; z-index:350; background:#ffffffd9; border:1px solid #dce5d7; color:var(--forest); padding:8px 11px; border-radius:3px; font-size:10px; letter-spacing:.04em; }
+      .map-placeholder-label span { color:var(--clay); margin-right:5px; }
+      .landmark-map { --map-zoom:1; height:470px; position:relative; overflow:hidden; background:#dfe9d6; border:1px solid #cad8c6; }
+      .map-content { position:absolute; inset:0; transform:scale(var(--map-zoom)); transform-origin:50% 50%; transition:transform .25s ease; }
+      .map-road { position:absolute; background:#f8f4e8; border:2px solid #d5d9c7; transform:rotate(-17deg); }
+      .road-one { width:120%; height:42px; top:49%; left:-8%; }.road-two { width:110%; height:29px; top:25%; left:-5%; transform:rotate(21deg); }
+      .map-river { position:absolute; width:120px; height:650px; right:12%; top:-70px; background:#a7ced0; border-left:9px solid #d7e5d1; border-right:9px solid #c8dfd0; border-radius:48%; transform:rotate(18deg); opacity:.9; }
+      .map-area-label { position:absolute; font-size:9px; font-weight:700; letter-spacing:.15em; color:#8a9a78; }.area-north { top:18px; left:24px; }.area-south { bottom:84px; right:22px; }
+      .landmark { position:absolute; z-index:3; border:0; background:#fffdf8; padding:8px 10px; border-radius:4px; box-shadow:0 3px 10px #29463022; color:var(--forest); font-size:10px; font-weight:700; display:flex; gap:6px; align-items:center; transition:.2s; }
+      .landmark i { color:var(--clay); font-style:normal; font-size:17px; }.landmark:hover,.landmark.selected { background:var(--forest); color:#fff; transform:translateY(-3px); }.landmark.selected i,.landmark:hover i { color:#e3c47d; }
+      .landmark-river { top:35%; right:23%; }.landmark-park { top:18%; left:26%; }.landmark-town { top:38%; left:11%; }.landmark-library { bottom:22%; left:32%; }.landmark-trail { bottom:12%; right:13%; }
+      .map-key { position:absolute; z-index:4; top:17px; right:16px; background:#ffffffed; padding:10px 12px; border-radius:4px; color:var(--forest); display:flex; flex-direction:column; font-size:10px; }.map-key span { color:#7b897d; margin-top:2px; font-size:9px; }
+      .landmark-map .map-legend { left:16px; bottom:16px; }
+      .real-map { height:470px; width:100%; background:#dce8d5; }
+      .local-map { height:470px; position:relative; overflow:hidden; background:#e7eee1; border:1px solid #d3dfd0; border-radius:6px; box-shadow:inset 0 0 0 1px #ffffff80; }
+      .map-art { position:absolute; inset:0; width:100%; height:100%; transition:transform .25s ease; transform-origin:50% 50%; }
+      .map-river-shape { fill:#9fc8cc; opacity:.9; }.map-park-shape { fill:#c4d9b1; stroke:#abc998; stroke-width:1; }.map-road-shapes path { fill:none; stroke:#f8f4e9; stroke-width:15; stroke-linecap:round; }.map-place-labels text { fill:#6d876f; font:600 10px sans-serif; letter-spacing:1.2px; }.map-report-pins circle { fill:var(--clay); stroke:#fff; stroke-width:4; }
+      .real-map { height:470px; width:100%; background:#dce8d5; border:1px solid #d3dfd0; border-radius:6px; }.legacy-landmark-strip{display:none}.custom-marker{width:27px!important;height:27px!important;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px #0004}.custom-marker span{display:block;transform:rotate(45deg);color:#fff;text-align:center;font-size:12px;line-height:21px}.marker-open{background:var(--clay)}.marker-progress{background:#c29636}.marker-resolved{background:var(--green)}
+      .offline-map{height:470px;position:relative;overflow:hidden;background:#e6eee0;border:1px solid #cbd9c5;border-radius:6px}.offline-map-art{position:absolute;inset:0;width:100%;height:100%;transition:transform .25s ease;transform-origin:50% 50%}.offline-river{fill:#9fc8cc;opacity:.86}.offline-park{fill:#c7dcb3;stroke:#a8c592;stroke-width:2}.offline-roads path{fill:none;stroke:#fbf8ef;stroke-width:14;stroke-linecap:round}.offline-roads .major{stroke:#fffdf5;stroke-width:23}.offline-labels text{fill:#6d866e;font:600 10px sans-serif;letter-spacing:1.2px}.offline-report-pins circle{fill:var(--clay);stroke:#fff;stroke-width:5}.offline-map-heading{position:absolute;top:16px;left:17px;display:flex;align-items:baseline;gap:8px;padding:8px 10px;background:#ffffffd9;border-radius:3px;color:var(--forest);box-shadow:0 2px 8px #274b3218}.offline-map-heading b{font:600 19px var(--serif)}.offline-map-heading span{color:#718272;font-size:9px;text-transform:uppercase;letter-spacing:.12em}.offline-map-controls{position:absolute;right:16px;bottom:16px;display:flex;gap:5px}.offline-map-controls button{width:30px;height:30px;border:1px solid #c6d3c2;border-radius:4px;background:#fffdf8;color:var(--forest);font-size:18px}.offline-map-controls button:hover{background:var(--forest);color:#fff}
+      .map-wrap{display:block}.map-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px}.google-map-wrap{min-height:470px;border-radius:14px;overflow:hidden;background:#dce8d5;border:1px solid #d3dfd0}.google-map{display:block;width:100%;height:470px;border:0}.map-section .section-heading{margin-bottom:28px}.map-section .section-heading:after{content:"Explore Westfield and the surrounding community.";display:block;max-width:290px;color:var(--muted);font-size:12px;line-height:1.6}.nearby-panel{max-width:760px;margin:0 auto;padding:28px 30px}.report-list{display:grid;grid-template-columns:1fr;column-gap:28px}.report-item{min-width:0}.nearby-panel .full-width{margin-top:8px}
+      @media(max-width:850px){.map-layout{grid-template-columns:1fr}.google-map-wrap,.google-map{height:390px}.nearby-panel{max-width:none}}
+      @media(max-width:650px){.report-list{grid-template-columns:1fr}.nearby-panel{padding:22px 18px}}
+      .map-blocks path{fill:#d6e1cf;stroke:#c3d2bd;stroke-width:1}.map-road-shapes path{stroke:#f8f4e9;stroke-width:13}.map-road-shapes .major{stroke:#fffaf0;stroke-width:22}.map-place-labels text{font-size:9px}.map-compass text{fill:#4d6a52;font:700 13px sans-serif}.map-compass path{stroke:#4d6a52;stroke-width:2;fill:none}
+      .map-title { position:absolute; z-index:4; top:18px; left:18px; display:flex; gap:9px; align-items:center; color:#fff; text-shadow:0 2px 8px #173f3599; }.map-title-mark{height:30px;width:30px;display:grid;place-items:center;background:var(--forest);border-radius:50%;font-size:14px}.map-title b,.map-title small{display:block}.map-title b{font-family:var(--serif);font-size:18px}.map-title small{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.86}.map-location-card{position:absolute;z-index:4;left:18px;bottom:18px;display:flex;gap:9px;align-items:center;padding:11px 13px;background:#fffdf8ed;border-radius:4px;color:var(--forest);box-shadow:0 4px 16px #173f3530}.map-location-card b,.map-location-card small{display:block}.map-location-card b{font-size:11px}.map-location-card small{color:var(--muted);font-size:9px;margin-top:2px}.map-card-dot{height:9px;width:9px;background:var(--clay);border-radius:50%;display:block}      .local-map{height:470px;position:relative;overflow:hidden;background:#dce7d5;border:1px solid #c7d5c2;border-radius:6px}.map-zoom-controls{position:absolute;z-index:6;right:16px;bottom:16px;display:flex;gap:5px}.map-zoom-controls button{width:29px;height:29px;border:1px solid #cad6c7;border-radius:4px;background:#fffdf8;color:var(--forest);font-size:18px}
+      .map-name{position:absolute;z-index:4;top:17px;left:18px;color:#315844;font-weight:700;font-size:11px;letter-spacing:.16em;background:#f8fbf3dd;padding:9px 11px;border-radius:3px;box-shadow:0 2px 8px #32553a18}.map-name span{font-size:8px;letter-spacing:.12em;color:#82917d;margin-left:7px;font-weight:500}.map-scale{position:absolute;z-index:4;right:17px;top:19px;color:#58705a;font-size:9px;display:flex;align-items:end;gap:3px}.map-scale span{display:block;width:16px;border-bottom:2px solid #58705a}.map-scale span:nth-child(2){width:16px;border-bottom-color:#fff}.map-scale span:nth-child(3){width:16px}.map-scale b{font-weight:600;margin-left:3px}
+      .map-river-shape { fill:#a9ced0; opacity:.82; }.map-park-shape { fill:#bed5aa; stroke:#a5c28e; stroke-width:2; }.map-road-shapes path { fill:none; stroke:#fbf8ef; stroke-width:19; stroke-linecap:round; filter:drop-shadow(0 1px 0 #c3d0bf); }.map-place-labels text { fill:#70866f; font:700 11px sans-serif; letter-spacing:1.4px; }.map-report-pins circle { fill:var(--clay); stroke:#fff; stroke-width:5; }
+      .map-title { position:absolute; z-index:4; top:18px; left:18px; display:flex; gap:9px; align-items:center; color:#fff; text-shadow:0 2px 8px #173f3599; }.map-title-mark{height:30px;width:30px;display:grid;place-items:center;background:var(--forest);border-radius:50%;font-size:14px}.map-title b,.map-title small{display:block}.map-title b{font-family:var(--serif);font-size:18px}.map-title small{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.86}
+      .map-location-card { position:absolute; z-index:4; left:18px; bottom:18px; display:flex; gap:9px; align-items:center; padding:11px 13px; background:#fffdf8ed; border-radius:4px; color:var(--forest); box-shadow:0 4px 16px #173f3530; }.map-location-card b,.map-location-card small{display:block}.map-location-card b{font-size:11px}.map-location-card small{color:var(--muted);font-size:9px;margin-top:2px}.map-card-dot{height:9px;width:9px;background:var(--clay);border-radius:50%;display:block}
+      .map-water,.map-park,.map-roads,.map-neighborhood,.svg-report-pins,.svg-landmark-labels { display:none; }
+      .map-footer { display:flex; justify-content:space-between; align-items:center; padding:11px 0; }.map-footer .map-legend { position:static; display:flex; gap:13px; font-size:10px; color:#586960; }.map-footer .map-zoom-controls { position:static; display:flex; gap:5px; }.map-footer .map-zoom-controls button { width:29px; height:29px; border:1px solid #cad6c7; border-radius:4px; background:#fffdf8; color:var(--forest); font-size:18px; }.landmark-strip { display:flex; flex-wrap:wrap; gap:7px; }.landmark-strip .local-landmark { position:static; border:1px solid #d6dfd2; box-shadow:none; padding:8px 10px; background:#fff; color:var(--forest); font-size:10px; cursor:pointer; }.landmark-strip .local-landmark.selected { background:var(--forest); color:#fff; }
+      .local-pin { position:absolute; z-index:3; width:20px; height:20px; border:3px solid #fff; border-radius:50%; display:grid; place-items:center; color:#fff; box-shadow:0 2px 6px #0004; font-size:0; }.report-pin { background:var(--clay); }.pin-one{left:67%;top:32%}.pin-two{left:41%;top:52%}.pin-three{left:29%;top:26%}.pin-four{left:49%;top:75%}
+      .local-landmark { position:absolute; z-index:4; border:0; background:#fffdf8; padding:8px 10px; border-radius:4px; box-shadow:0 3px 10px #29463022; color:var(--forest); font-size:10px; font-weight:700; display:flex; gap:6px; align-items:center; transition:.2s; }.local-landmark i{color:var(--clay);font-style:normal;font-size:17px}.local-landmark:hover,.local-landmark.selected{background:var(--forest);color:#fff;transform:translateY(-3px)}.landmark-river{top:37%;right:19%}.landmark-park{top:17%;left:20%}.landmark-town{top:41%;left:46%}.landmark-library{top:25%;left:53%}.landmark-trail{bottom:12%;left:39%}
+      .local-map .map-legend { position:absolute; z-index:6; left:16px; bottom:16px; }.local-map .map-key { position:absolute; z-index:6; top:17px; right:16px; background:#ffffffed; padding:10px 12px; border-radius:4px; color:var(--forest); display:flex; flex-direction:column; font-size:10px; }.local-map .map-key span { color:#7b897d; margin-top:2px; font-size:9px; }
+      .landmark-pin { background:var(--forest); border:3px solid #fff; border-radius:50% 50% 50% 0; transform:rotate(-45deg); box-shadow:0 2px 6px #0004; }
+      .landmark-pin span { display:block; transform:rotate(45deg); color:#fff; text-align:center; line-height:24px; font-size:13px; }
+      .map-zoom-controls { position:absolute; z-index:5; right:16px; bottom:16px; display:flex; gap:5px; }
+      .map-zoom-controls button { width:31px; height:31px; border:1px solid #cad6c7; border-radius:4px; background:#fffdf8; color:var(--forest); font-size:20px; line-height:1; box-shadow:0 2px 7px #2946301f; }
+      .map-zoom-controls button:hover { background:var(--forest); color:#fff; }
+      .map-zoom-controls button:last-child { font-size:16px; }
+      /* Refined visual theme */
+      :root{--forest:#214b3d;--green:#4d8063;--sage:#c8d8bc;--olive:#7e8e58;--clay:#c97555;--beige:#f6f1e8;--paper:#fcfbf8;--ink:#263b32;--muted:#718078;--line:#e3e8df}
+      body{background:var(--paper);color:var(--ink)}.site-header{background:#fffdf9;border-bottom:1px solid #ebe8df}.brand-mark{background:var(--forest);box-shadow:0 4px 12px #214b3d24}
+      .hero{background:linear-gradient(120deg,#f7f2e9,#eef3e8);padding-top:76px;padding-bottom:76px}.hero h1{color:var(--forest)}.hero-intro{color:#65766d}.button-primary{background:var(--forest);box-shadow:0 8px 20px #214b3d20}
+      .hero-photo{border-radius:18px 18px 90px 90px;box-shadow:14px 16px 0 #d9e4d2}.floating-card{border-radius:10px}.impact-strip{background:var(--forest)}
+      .map-section{background:#fffdf9}.section-heading h2,.center-heading h2,.report-form-wrap h2{color:var(--forest)}.filter-chip{background:#fff;border-color:#d9e3d6}.filter-chip.active{background:var(--green);border-color:var(--green)}
+      .maps-link{align-self:end;color:var(--forest);font-size:11px;font-weight:700;border-bottom:1px solid #a9c6a8;padding-bottom:4px;white-space:nowrap}.maps-link span{color:var(--clay);font-size:15px;margin-left:5px}.maps-link:hover{color:var(--clay)}
+      .nearby-panel{border:1px solid #e1e8dd;border-radius:14px;box-shadow:0 16px 38px #214b3d0e;background:#fff}.report-item{padding:16px 0}.report-thumb{border-radius:9px}.button-outline{border-color:#bfd0be;border-radius:8px}
+      .report-section{background:#edf2e9}.report-image{border-radius:0 70px 70px 0}.report-form-wrap{padding-top:72px}.report-form-wrap select,.report-form-wrap input:not([type=checkbox]):not([type=file]),.report-form-wrap textarea{background:#fffdf9;border-color:#d3ded2;border-radius:8px}.location-input button{border-radius:6px;background:#dce9d5}.upload-label{border-radius:9px;background:#f8faf4}.submit-button{border-radius:8px}
+      .how-section{background:#f4f6ef}.steps article{padding:18px 10px;border-radius:14px;background:#fffdf9;box-shadow:0 12px 25px #214b3d09}.step-icon{background:#e3eddc}.toast{border-radius:10px}
+      /* Westfield civic refresh */
+      :root{--forest:#1d4936;--green:#397451;--sage:#c8d8b8;--olive:#71834b;--clay:#b86b4f;--beige:#f3efe5;--paper:#fbfaf6;--ink:#263d31;--muted:#6d7c70;--line:#dbe3d6;--serif:'Playfair Display',Georgia,serif}
+      body{font-family:var(--sans);background:#fbfaf7;color:var(--ink)}
+      .site-header{height:88px;padding:0 max(6vw,44px);background:#1d4936;color:#f7f3e9;border:0}.brand{font-size:18px;letter-spacing:.01em}.brand strong{font-weight:700}.brand-mark{background:#d2a85a;color:#1d4936}.brand-place{display:block;color:#b8ceb9;font-size:7px;letter-spacing:.2em;font-weight:700;margin-top:1px}.main-nav{color:#d8e5d5;gap:30px}.main-nav a:hover{color:#fff}.site-header .button-primary{background:#c47a58;color:#fffaf3;box-shadow:none;border-radius:3px}.site-header .button-primary:hover{background:#aa6045}
+      .hero{min-height:600px;padding:92px max(9vw,70px) 82px;background:#edf2e7;grid-template-columns:1.05fr .95fr;gap:7%;position:relative}.hero:before{content:"WESTFIELD / COMMUNITY NOTICE";position:absolute;top:25px;left:max(9vw,70px);color:#758976;font-size:9px;font-weight:700;letter-spacing:.18em}.hero h1{font-size:clamp(48px,5.2vw,72px);color:#1d4936}.hero h1 em{color:#b86b4f}.hero-intro{font-size:16px;color:#586d60;max-width:470px}.hero-art{min-height:420px}.hero-photo{border-radius:4px 4px 130px 130px;box-shadow:18px 18px 0 #c9d8c0;background-position:center 45%}.hero-actions .button-primary{background:#1d4936;border-radius:3px}.text-button{color:#b86b4f}
+      .map-section{padding:92px max(7vw,55px);background:#fbfaf6}.section-heading{max-width:1100px}.section-heading h2{font-size:43px;color:#1d4936}.section-heading h2 em{color:#b86b4f}.filter-chip{border-radius:3px;background:#f0f4ed;color:#586d60}.filter-chip.active{background:#397451;border-color:#397451}.google-map-wrap{border-radius:4px;border-color:#c8d7c6;box-shadow:0 14px 35px #1d493612}.nearby-panel{border-radius:4px;box-shadow:0 14px 35px #1d493612}.nearby-header h3{font-size:27px;color:#1d4936}.live-pill{border-radius:3px;background:#e1ede0;color:#397451}
+      .report-section{background:#e1ebdf}.report-image{border-radius:0;background-position:center}.report-form-wrap{padding:88px 8vw}.report-form-wrap h2{font-size:48px;color:#1d4936}.report-form-wrap h2 em{color:#b86b4f}.button-primary{background:#1d4936;border-radius:3px}.report-form-wrap select,.report-form-wrap input:not([type=checkbox]):not([type=file]),.report-form-wrap textarea{border-radius:3px;background:#fbfaf6}.location-input button{border-radius:3px;background:#c8d8b8}.upload-label{border-radius:3px}
+      .how-section{padding:96px max(8vw,55px);background:#f1f4ec}.center-heading h2{font-size:45px;color:#1d4936}.center-heading h2 em{color:#b86b4f}.steps{gap:18px}.steps article{border-radius:3px;border-top:4px solid #397451;box-shadow:none;background:#fbfaf6;padding:24px 16px}.step-icon{background:#deebd8;color:#397451}.steps h3{color:#1d4936}
+      footer{background:#1d4936;padding:34px max(6vw,44px);color:#dbe8d8}.footer-note{color:#b8ceb9}
+      @media(max-width:850px){.hero{padding-top:72px}.hero:before{left:7vw}.hero{grid-template-columns:1fr}.hero-art{min-height:340px}}
+      /* Keep the accent system fully green. */
+      :root{--clay:#397451}
+      .site-header .button-primary,.site-header .button-primary:hover{background:#397451}
+      .hero h1 em,.section-heading h2 em,.report-form-wrap h2 em,.center-heading h2 em,.text-button,.maps-link,.maps-link:hover{color:#397451}
+      .maps-link span,.map-card-dot,.pin-dot,.report-pin,.dot-open,.marker-open,.local-pin.report-pin{background:#397451}
+      .hero .eyebrow span{background:#397451}
+      .landmark i,.local-landmark i,.map-placeholder-label span{color:#397451}
+      .brand-mark,footer .brand-mark{background:#b9cdb6;color:#1d4936}
+      .impact-strip small,.impact-message b,.leaf,.quote-mark{color:#b9cdb6}
+      .avatar-2{background:#397451}
+      .dot-progress,.marker-progress{background:#71834b}
+      .landmark.selected i,.landmark:hover i{color:#c8d8b8}
+      .map-location-button{position:absolute;z-index:2;top:15px;right:15px;border:1px solid #c8d7c6;border-radius:3px;background:#fff;color:#1d4936;padding:9px 12px;box-shadow:0 2px 7px #1d493622;font-size:11px;font-weight:700}
+      .map-location-button:hover{background:#397451;color:#fff;border-color:#397451}
+      .map-location-button[aria-busy="true"]{opacity:.7;cursor:wait}
+      .waiting-copy{margin:14px 0 22px;color:#6d7c70;font-size:12px;line-height:1.7}
+      .submitted-reports-section{max-width:1220px;margin:26px auto 0;padding:0 30px}
+      .submitted-reports-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid #dbe3d6;background:#fff;color:#1d4936;padding:15px 17px;border-radius:4px;font-weight:700;font-size:12px;text-align:left}
+      .submitted-reports-toggle:hover{background:#f1f5ed}
+      .submitted-reports-content{margin-top:10px;padding:20px;background:#fff;border:1px solid #e1e8dd;border-radius:4px}
+      .submitted-reports-content[hidden]{display:none}
+      .report-item.is-picked-up{opacity:.62}.report-item.is-picked-up .report-title{text-decoration:line-through}
+      .pickup-check{display:flex;align-items:center;gap:7px;margin-left:auto;color:#5f7564;font-size:10px;white-space:nowrap}
+      .pickup-check input{accent-color:#397451}
+      .report-item{align-items:center}
+      .pickup-history-section{max-width:1220px;margin:26px auto 0;padding:24px 30px;background:#f5f7f1;border:1px solid #dbe5d7;border-radius:4px}
+      .pickup-history-section h3{margin:0;color:#1d4936;font:600 24px var(--serif)}
+      .pickup-history-intro{margin:6px 0 18px;color:#6d7c70;font-size:12px}
+      .pickup-history-list{display:grid;gap:10px}
+      .pickup-history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:15px;background:#fff;border:1px solid #e1e8dd;border-radius:4px}
+      .pickup-history-item strong{display:block;color:#1d4936;font-size:12px}.pickup-history-item p{margin:5px 0 0;color:#6d7c70;font-size:11px;line-height:1.6}
+      .pickup-history-item .history-meta{color:#718078;font-size:10px}.delete-history-button{border:1px solid #c9d9c7;background:#fff;color:#397451;border-radius:3px;padding:8px 10px;font-size:10px;font-weight:700}.delete-history-button:hover{background:#397451;color:#fff}
+      .pickup-history-empty{margin:0;color:#6d7c70;font-size:12px}
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Clean Westfield home">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span><strong>Clean</strong> Westfield <small class="brand-place">INDIANA</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#map-section">Neighborhood reports</a>
+        <a href="#how-it-works">Get involved</a>
+        <a href="#community">About Westfield</a>
+      </nav>
+      <button class="button button-small button-primary" data-scroll-to="report-panel">
+        <span aria-hidden="true">+</span> Report an issue
+      </button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> Westfield, Indiana · Community care</p>
+          <h1>Keep Westfield<br /><em>looking its best.</em></h1>
+          <p class="hero-intro">
+            From the river paths to the neighborhoods we know by heart, Clean Westfield
+            helps residents flag problems and rally the people who can help.
+          </p>
+          <div class="hero-actions">
+            <button class="button button-primary" data-scroll-to="report-panel">Make a report <span>→</span></button>
+            <button class="text-button" data-scroll-to="map-section">Browse neighborhood reports <span>↓</span></button>
+          </div>
+        </div>
+        <div class="hero-art" aria-label="Aerial view of a green river landscape">
+          <div class="hero-photo"></div>
+        </div>
+      </section>
+
+      <section class="map-section" id="map-section">
+        <div class="section-heading">
+          <div>          <p class="eyebrow"><span></span> Around Westfield</p><h2>What needs a neighbor’s<br /><em>attention?</em></h2></div>
+          <div class="map-controls">
+            <button class="filter-chip active" data-filter="all">All reports</button>
+            <button class="filter-chip" data-filter="litter">Litter</button>
+            <button class="filter-chip" data-filter="dumping">Dumping</button>
+            <button class="filter-chip" data-filter="hazard">Hazard</button>
+          </div>
+        </div>
+        <div class="map-layout">
+          <div class="map-wrap google-map-wrap">
+            <iframe class="google-map" title="Interactive Google map of Westfield" src="https://www.google.com/maps?q=Westfield%20Indiana&output=embed" loading="lazy" allowfullscreen></iframe>
+            <button class="map-location-button" id="map-use-location" type="button">◎ Show my location</button>
+          </div>
+          <aside class="nearby-panel">
+            <div class="nearby-header"><div><p class="eyebrow"><span></span> Map status</p><h3>Waiting for live data</h3></div></div>
+            <p class="waiting-copy">Live reports will appear on the map as soon as this community reporting network is connected.</p>
+            <button class="button button-outline full-width" data-scroll-to="report-panel">Submit a report <span>→</span></button>
+          </aside>
+        </div>
+        <div class="submitted-reports-section">
+          <button class="submitted-reports-toggle" id="toggle-submitted-reports" type="button" aria-expanded="false" aria-controls="submitted-reports-content">
+            <span>View all submitted reports</span><span aria-hidden="true">＋</span>
+          </button>
+          <div class="submitted-reports-content" id="submitted-reports-content" hidden>
+            <div id="report-list" class="report-list"></div>
+            <p id="empty-reports" class="waiting-copy">No recent reports have been submitted.</p>
+          </div>
+        </div>
+        <section class="pickup-history-section" aria-labelledby="pickup-history-heading">
+          <h3 id="pickup-history-heading">Pickup history</h3>
+          <p class="pickup-history-intro">Completed reports stay here so their locations and cleanup details are not lost.</p>
+          <div id="pickup-history-list" class="pickup-history-list"></div>
+          <p id="pickup-history-empty" class="pickup-history-empty">No trash pickups have been marked yet.</p>
+        </section>
+      </section>
+
+      <section class="report-section" id="report-panel">
+        <div class="report-image"><div class="image-overlay"><span class="quote-mark">“</span><p>When we take care of our shared spaces, we take care of each other.</p><span class="quote-by">— Westfield volunteer</span></div></div>
+        <div class="report-form-wrap">
+          <p class="eyebrow"><span></span> A note to the City & neighbors</p>
+          <h2>Notice it.<br /><em>Report it.</em></h2>
+          <p class="form-intro">A few details is all it takes. Your report helps the right people respond faster.</p>
+          <form id="report-form">
+            <label>What did you find?<select name="type" required><option value="">Choose a category</option><option value="litter">Litter & small trash</option><option value="dumping">Illegal dumping</option><option value="hazard">Environmental hazard</option><option value="other">Something else</option></select></label>
+            <div class="form-row"><label>How much?<select name="amount"><option>Just a little</option><option>A few bags</option><option>A truckload or more</option><option>Not sure</option></select></label><label>Severity<select name="severity"><option>Low — eyesore</option><option>Medium — needs attention</option><option>High — safety risk</option></select></label></div>
+            <label>Where is it? <span class="label-hint">Enter a place or use your location</span><div class="location-input"><input name="location" id="location-input" placeholder="Street, park, or landmark" required /><button type="button" id="use-location">Use my location</button></div></label>
+            <div id="selected-location" class="selected-location" hidden>● Location pinned on the map</div>
+            <label>Tell us a little more <span class="label-hint">Optional</span><textarea name="notes" rows="3" placeholder="What should volunteers or the City know?"></textarea></label>
+            <div class="form-row form-bottom"><label class="date-label">Date observed<input type="date" name="date" /></label><label class="check-label"><input type="checkbox" name="risk" /><span class="fake-check"></span><span>This may be a safety or environmental risk</span></label></div>
+            <label class="upload-label"><input type="file" accept="image/*" id="photo-input" /><span class="upload-icon">↥</span><span><b>Add a photo</b><small>Optional · JPG or PNG up to 10MB</small></span></label>
+            <button class="button button-primary submit-button" type="submit">Submit community report <span>→</span></button>
+            <p class="form-note">Reports are shared with Westfield’s community network. Please do not put yourself in danger to document an issue.</p>
+          </form>
+          <div id="success-message" class="success-message" hidden><span>✓</span><div><strong>Thank you for looking out for Westfield.</strong><p>Your report is now visible on the community map.</p></div></div>
+        </div>
+      </section>
+
+      <section class="how-section" id="how-it-works">
+        <div class="center-heading"><p class="eyebrow"><span></span> The Westfield way</p><h2>Small civic acts<br /><em>shape our town.</em></h2></div>
+        <div class="steps"><article><span class="step-number">01</span><span class="step-icon">⌖</span><h3>Spot & pin</h3><p>Notice litter, dumping, or a concern? Drop a pin exactly where you found it.</p></article><article><span class="step-number">02</span><span class="step-icon">♧</span><h3>Share the details</h3><p>A photo and a few details help neighbors understand what needs attention.</p></article><article><span class="step-number">03</span><span class="step-icon">♥</span><h3>Make it better</h3><p>Volunteers and local teams turn reports into cleaner parks, streets, and waterways.</p></article></div>
+      </section>
+    </main>
+    <footer id="community"><a class="brand" href="#"><span class="brand-mark">✦</span><span><strong>Clean</strong> Westfield <small class="brand-place">INDIANA</small></span></a><p>For the streets, parks, and river we share.</p><span class="footer-note">A neighbor-powered project</span></footer>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
