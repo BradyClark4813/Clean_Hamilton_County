@@ -292,33 +292,106 @@
           <div id="pickup-history-list" class="pickup-history-list"></div>
           <p id="pickup-history-empty" class="pickup-history-empty">No trash pickups have been marked yet.</p>
         </section>
-        <section class="impact-section" id="volunteer-impact" aria-labelledby="impact-heading">
-          <div class="impact-header">
-            <div><p class="eyebrow"><span></span> Community progress</p><h3 id="impact-heading">Volunteer impact<br /><em>over time.</em></h3></div>
-            <p>Anyone can add or update a cleanup entry. Together, these small records show the work happening across Hamilton County.</p>
-          </div>
-          <div class="impact-layout">
-            <form id="impact-form" class="impact-form">
-              <input type="hidden" name="id" />
-              <label>Cleanup date<input type="date" name="cleanup_date" required /></label>
-              <label>Where did you help?<input type="text" name="location" placeholder="Park, trail, street, or neighborhood" required /></label>
-              <div class="form-row">
-                <label>Bags picked up<input type="number" name="bags" min="0" step="1" placeholder="0" required /></label>
-                <label>Volunteers<input type="number" name="volunteers" min="0" step="1" placeholder="0" required /></label>
-              </div>
-              <label>Volunteer hours<input type="number" name="hours" min="0" step="0.5" placeholder="0" required /></label>
-              <label>Notes <span class="label-hint">Optional</span><textarea name="notes" rows="2" placeholder="What did the team accomplish?"></textarea></label>
-              <div class="impact-form-actions"><button class="button button-primary button-small" type="submit"><span id="impact-submit-label">Add impact</span></button><button class="button button-outline button-small" id="impact-cancel" type="button" hidden>Cancel edit</button></div>
-            </form>
-            <div class="impact-results">
-              <div class="impact-totals" id="impact-totals"><div><strong>0</strong><span>Bags picked up</span></div><div><strong>0</strong><span>Volunteer hours</span></div><div><strong>0</strong><span>Neighbors helping</span></div></div>
-              <div id="impact-list" class="impact-list"></div>
-              <p id="impact-empty" class="pickup-history-empty">No cleanup entries yet. Add the first one.</p>
-            </div>
-          </div>
-        </section>
-      </section>
+      // ====== LOCAL STORAGE UTILITIES ======
+function loadImpacts() {
+  return JSON.parse(localStorage.getItem("impacts") || "[]");
+}
 
+function saveImpacts(list) {
+  localStorage.setItem("impacts", JSON.stringify(list));
+}
+
+// ====== DOM ELEMENTS ======
+const form = document.getElementById("impact-form");
+const listEl = document.getElementById("impact-list");
+const emptyEl = document.getElementById("impact-empty");
+const totalsEl = document.getElementById("impact-totals");
+const submitLabel = document.getElementById("impact-submit-label");
+const cancelBtn = document.getElementById("impact-cancel");
+
+// ====== STATE ======
+let impacts = loadImpacts();
+let editingId = null;
+
+// ====== RENDER LIST ======
+function renderImpacts() {
+  listEl.innerHTML = "";
+
+  if (impacts.length === 0) {
+    emptyEl.hidden = false;
+    totalsEl.hidden = true;
+    return;
+  }
+
+  emptyEl.hidden = true;
+  totalsEl.hidden = false;
+
+  impacts.forEach(entry => {
+    const item = document.createElement("div");
+    item.className = "impact-item";
+    item.innerHTML = `
+      <div>
+        <strong>${entry.cleanup_date}</strong> — ${entry.location}<br>
+        <small>${entry.bags} bags • ${entry.volunteers} volunteers • ${entry.hours} hours</small>
+        ${entry.notes ? `<p>${entry.notes}</p>` : ""}
+      </div>
+      <div class="impact-actions">
+        <button data-edit="${entry.id}">Edit</button>
+        <button data-delete="${entry.id}">Delete</button>
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+
+  updateTotals();
+}
+
+// ====== UPDATE TOTALS ======
+function updateTotals() {
+  const totalBags = impacts.reduce((a, b) => a + Number(b.bags), 0);
+  const totalHours = impacts.reduce((a, b) => a + Number(b.hours), 0);
+  const totalVolunteers = impacts.reduce((a, b) => a + Number(b.volunteers), 0);
+
+  totalsEl.innerHTML = `
+    <div><strong>${totalBags}</strong><span>Bags picked up</span></div>
+    <div><strong>${totalHours}</strong><span>Volunteer hours</span></div>
+    <div><strong>${totalVolunteers}</strong><span>Neighbors helping</span></div>
+  `;
+}
+
+// ====== HANDLE FORM SUBMIT ======
+form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  if (editingId) {
+    // Update existing entry
+    const idx = impacts.findIndex(i => i.id === editingId);
+    impacts[idx] = { ...impacts[idx], ...data };
+  } else {
+    // Create new entry
+    impacts.push({
+      id: crypto.randomUUID(),
+      ...data
+    });
+  }
+
+  saveImpacts(impacts);
+  renderImpacts();
+  form.reset();
+  editingId = null;
+  submitLabel.textContent = "Add impact";
+  cancelBtn.hidden = true;
+});
+
+// ====== EDIT & DELETE ======
+listEl.addEventListener("click", e => {
+  const editId = e.target.dataset.edit;
+  const deleteId = e.target.dataset.delete;
+
+  if (editId) {
+    const entry = impacts.find(i => i.id ===
       <section class="report-section" id="report-panel">
         <div class="report-image"><div class="image-overlay"><span class="quote-mark"></span><p>When we take care of our shared spaces, we take care of each other.</p><span class="quote-by"> Hamilton County volunteer</span></div></div>
         <div class="report-form-wrap">
